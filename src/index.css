@@ -2,70 +2,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
-    --background: 215 32% 10%;
-    --foreground: 210 40% 98%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
 
-    --card: 215 32% 12%;
-    --card-foreground: 210 40% 98%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 20% 65%;
 
-    --popover: 215 32% 12%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 205 85% 25%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 145 65% 24%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 215 25% 18%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-
-    --accent: 36 100% 50%;
+    --accent: 216 34% 17%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 20%;
-    --input: 217.2 32.6% 22%;
-    --ring: 215 85% 25%;
+    --ring: 216 34% 17%;
 
     --radius: 0.5rem;
+
+    /* Tactical theme colors */
+    --tactical-dark: 217 27% 14%;
+    --tactical-primary: 197 80% 53%;
+    --tactical-secondary: 219 71% 42%;
+    --tactical-success: 135 57% 46%;
+    --tactical-warning: 36 100% 50%;
+    --tactical-danger: 3 93% 62%;
+    --tactical-info: 240 64% 55%;
   }
 }
 
+@layer utilities {
+  .animate-pulse-subtle {
+    animation: pulse-subtle 1.5s infinite ease-in-out;
+  }
+  
+  @keyframes pulse-subtle {
+    0% { opacity: 1; }
+    50% { opacity: 0.85; }
+    100% { opacity: 1; }
+  }
+}
+ 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-tactical-dark text-foreground;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-.mesh-node {
-  @apply relative w-3 h-3 rounded-full bg-tactical-network;
-}
-
-.mesh-line {
-  @apply absolute h-0.5 bg-tactical-network opacity-70 origin-left;
-  transition: all 0.5s ease;
-}
-
-.map-container {
-  background-color: #0A1929;
-  background-image: 
-    linear-gradient(rgba(15, 76, 117, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 76, 117, 0.1) 1px, transparent 1px),
-    linear-gradient(rgba(15, 76, 117, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 76, 117, 0.05) 1px, transparent 1px);
-  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
-}
-
-.terrain-overlay {
-  background-image: radial-gradient(circle at 50% 50%, rgba(15, 76, 117, 0.15) 0%, transparent 70%);
-}

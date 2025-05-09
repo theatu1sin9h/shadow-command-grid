@@ -7,8 +7,9 @@ import CommandCenter from "@/components/CommandCenter";
 import ConnectionStatus from "@/components/ConnectionStatus";
 import MessagingPanel from "@/components/MessagingPanel";
 import { useSimulatedNetwork } from "@/utils/meshNetwork";
-import { ConnectionStatus as ConnStatus } from "@/utils/types";
+import { ConnectionStatus as ConnStatus, Unit } from "@/utils/types";
 import { Toaster } from "sonner";
+import { toast } from "sonner";
 
 const Index = () => {
   const { 
@@ -19,7 +20,8 @@ const Index = () => {
     connectionStatus,
     sendMessage,
     issueCommand,
-    toggleNetworkMode
+    toggleNetworkMode,
+    addUnit
   } = useSimulatedNetwork();
   
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
@@ -36,6 +38,14 @@ const Index = () => {
       return () => clearInterval(interval);
     }
   }, [connectionStatus]);
+
+  const handleAddUnit = (newUnit: Unit) => {
+    addUnit(newUnit);
+    toast.success(`Unit ${newUnit.callsign} deployed successfully`, {
+      description: `Type: ${newUnit.type}`,
+      duration: 5000,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-tactical-dark text-white flex flex-col">
@@ -54,7 +64,7 @@ const Index = () => {
         
         {/* Right sidebar with unit status and network info */}
         <div className="space-y-3 md:space-y-4">
-          <UnitStatus units={units} />
+          <UnitStatus units={units} onAddUnit={handleAddUnit} />
           <ConnectionStatus status={connectionStatus} meshNetwork={meshNetwork} />
         </div>
         

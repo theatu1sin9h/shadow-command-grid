@@ -219,6 +219,13 @@ export const useSimulatedNetwork = () => {
           lat: unit.position.lat + (Math.random() - 0.5) * 0.002,
           lng: unit.position.lng + (Math.random() - 0.5) * 0.002
         },
+        // Randomly update unit statuses to simulate real-time changes (if online)
+        status: unit.connectionStatus !== ConnectionStatus.OFFLINE ? {
+          ...unit.status,
+          personnel: Math.max(1, Math.min(100, unit.status.personnel + (Math.random() > 0.7 ? (Math.random() - 0.6) * 5 : 0))),
+          ammo: Math.max(1, Math.min(100, unit.status.ammo + (Math.random() > 0.7 ? (Math.random() - 0.6) * 3 : 0))),
+          fuel: Math.max(1, Math.min(100, unit.status.fuel + (Math.random() > 0.8 ? (Math.random() - 0.7) * 4 : 0)))
+        } : unit.status,
         lastUpdate: unit.connectionStatus !== ConnectionStatus.OFFLINE ? new Date() : unit.lastUpdate
       }));
       
@@ -278,6 +285,11 @@ export const useSimulatedNetwork = () => {
       ConnectionStatus.ONLINE
     );
   };
+
+  // Add new unit
+  const addUnit = (newUnit: Unit) => {
+    setUnits(prev => [...prev, newUnit]);
+  };
   
   return {
     units,
@@ -287,6 +299,7 @@ export const useSimulatedNetwork = () => {
     connectionStatus,
     sendMessage,
     issueCommand,
-    toggleNetworkMode
+    toggleNetworkMode,
+    addUnit
   };
 };
