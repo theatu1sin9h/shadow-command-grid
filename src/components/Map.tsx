@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Unit, Command, Coordinates, CommandType, UnitType } from "@/utils/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { MilitarySquare, Navigation, Flag, FlagTriangleRight } from "lucide-react";
+import { LayoutGrid, Navigation, Flag, FlagTriangleRight } from "lucide-react";
 
 interface MapProps {
   units: Unit[];
@@ -959,7 +959,7 @@ const Map = ({ units, commands }: MapProps) => {
               className={`p-1 text-xs rounded ${showGrid ? 'bg-tactical-primary' : 'bg-gray-700'}`}
               title="Toggle Grid"
             >
-              <MilitarySquare size={14} />
+              <LayoutGrid size={14} />
             </button>
             <button 
               onClick={handleToggleTerrain} 

@@ -1,11 +1,10 @@
-
 import React from "react";
 import { Unit, ConnectionStatus, UnitType } from "@/utils/types";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Shield, User, Helicopter, Award, Wrench, Signal } from "lucide-react";
+import { Shield, User, Plane, Award, Wrench, Signal } from "lucide-react";
 
 interface UnitStatusProps {
   units: Unit[];
@@ -34,7 +33,7 @@ const UnitStatus: React.FC<UnitStatusProps> = ({ units }) => {
       case UnitType.ARMOR:
         return <Shield size={18} className="text-tactical-warning" />;
       case UnitType.AIR:
-        return <Helicopter size={18} className="text-tactical-info" />;
+        return <Plane size={18} className="text-tactical-info" />;
       case UnitType.COMMAND:
         return <Award size={18} className="text-tactical-primary" />;
       case UnitType.SUPPORT:
@@ -121,8 +120,7 @@ const UnitStatus: React.FC<UnitStatusProps> = ({ units }) => {
                 </div>
                 <Progress 
                   value={unit.status.personnel} 
-                  className="h-1.5 bg-gray-800" 
-                  indicatorClassName={getStatusColor(unit.status.personnel)}
+                  className={`h-1.5 bg-gray-800 ${getStatusColor(unit.status.personnel)}`}
                 />
               </div>
               
@@ -133,8 +131,7 @@ const UnitStatus: React.FC<UnitStatusProps> = ({ units }) => {
                 </div>
                 <Progress 
                   value={unit.status.ammo} 
-                  className="h-1.5 bg-gray-800" 
-                  indicatorClassName={getStatusColor(unit.status.ammo)}
+                  className={`h-1.5 bg-gray-800 ${getStatusColor(unit.status.ammo)}`}
                 />
               </div>
               
@@ -145,8 +142,7 @@ const UnitStatus: React.FC<UnitStatusProps> = ({ units }) => {
                 </div>
                 <Progress 
                   value={unit.status.fuel} 
-                  className="h-1.5 bg-gray-800" 
-                  indicatorClassName={getStatusColor(unit.status.fuel)}
+                  className={`h-1.5 bg-gray-800 ${getStatusColor(unit.status.fuel)}`}
                 />
               </div>
               
