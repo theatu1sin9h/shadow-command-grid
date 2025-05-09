@@ -1,129 +1,134 @@
 
-import { Unit, UnitType } from "@/utils/types";
+import React from "react";
+import { Unit, ConnectionStatus } from "@/utils/types";
 import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface UnitStatusProps {
   units: Unit[];
 }
 
-const UnitStatus = ({ units }: UnitStatusProps) => {
-  const getUnitTypeIcon = (type: UnitType) => {
-    switch (type) {
-      case UnitType.INFANTRY:
-        return "👤";
-      case UnitType.ARMOR:
-        return "🔶";
-      case UnitType.AIR:
-        return "✈️";
-      case UnitType.COMMAND:
-        return "⭐";
-      case UnitType.SUPPORT:
-        return "🔧";
+const UnitStatus: React.FC<UnitStatusProps> = ({ units }) => {
+  const getConnectionStatusColor = (status: ConnectionStatus) => {
+    switch (status) {
+      case ConnectionStatus.ONLINE:
+        return "bg-tactical-success";
+      case ConnectionStatus.MESH_ONLY:
+        return "bg-tactical-warning";
+      case ConnectionStatus.DEGRADED:
+        return "bg-tactical-warning";
+      case ConnectionStatus.OFFLINE:
+        return "bg-tactical-danger";
       default:
-        return "❓";
+        return "bg-gray-500";
     }
   };
-  
-  const formatTimeSince = (date: Date) => {
+
+  const getUnitTypeIcon = (type: string) => {
+    switch (type) {
+      case "INFANTRY":
+        return "👤";
+      case "ARMOR":
+        return "🛡️";
+      case "AIR":
+        return "🚁";
+      case "COMMAND":
+        return "🎖️";
+      case "SUPPORT":
+        return "🔧";
+      default:
+        return "⚙️";
+    }
+  };
+
+  const formatLastUpdate = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    const diffMinutes = Math.round(diffMs / 60000);
+    const diffMins = Math.floor(diffMs / 60000);
     
-    if (diffMinutes < 1) return "< 1m ago";
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    const diffHours = Math.floor(diffMinutes / 60);
-    return `${diffHours}h ${diffMinutes % 60}m ago`;
+    if (diffMins < 1) {
+      return "Just now";
+    } else if (diffMins === 1) {
+      return "1 min ago";
+    } else if (diffMins < 60) {
+      return `${diffMins} mins ago`;
+    } else {
+      const hours = Math.floor(diffMins / 60);
+      if (hours === 1) {
+        return "1 hour ago";
+      } else {
+        return `${hours} hours ago`;
+      }
+    }
   };
 
   return (
-    <div className="bg-tactical-dark p-4 rounded-lg border border-tactical-primary">
+    <div className="bg-tactical-dark p-4 rounded-lg border border-tactical-primary h-full">
       <h3 className="text-sm font-semibold mb-3">UNIT STATUS</h3>
       
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-[calc(100%-2rem)] overflow-y-auto pr-1">
         {units.map(unit => (
-          <div
-            key={unit.id}
-            className="p-2 rounded bg-black bg-opacity-20 border border-gray-800"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span 
-                  className={`text-sm ${
-                    unit.connectionStatus === 'ONLINE' ? 'text-tactical-success' :
-                    unit.connectionStatus === 'MESH_ONLY' ? 'text-tactical-warning' :
-                    unit.connectionStatus === 'DEGRADED' ? 'text-amber-500' : 'text-tactical-danger'
-                  }`}
+          <Card key={unit.id} className="bg-black bg-opacity-30 border-gray-800">
+            <CardContent className="p-3">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl" aria-hidden="true">
+                    {getUnitTypeIcon(unit.type)}
+                  </span>
+                  <div>
+                    <div className="font-medium text-sm">{unit.callsign}</div>
+                    <div className="text-xs text-gray-400">{unit.type}</div>
+                  </div>
+                </div>
+                <Badge 
+                  className={`${getConnectionStatusColor(unit.connectionStatus)} text-white text-xs px-2 py-0 h-5`}
                 >
-                  •
-                </span>
-                <span className="font-medium">{unit.callsign}</span>
-                <span className="text-xs bg-tactical-primary px-2 py-0.5 rounded">
-                  {getUnitTypeIcon(unit.type)} {unit.type}
-                </span>
+                  {unit.connectionStatus}
+                </Badge>
               </div>
-              <div className="text-xs text-gray-400">
-                {formatTimeSince(unit.lastUpdate)}
-              </div>
-            </div>
-            
-            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-              <div>
-                <div className="flex justify-between">
+              
+              <div className="mb-2">
+                <div className="flex justify-between items-center text-xs mb-1">
                   <span>Personnel</span>
                   <span>{unit.status.personnel}</span>
                 </div>
-                <Progress value={unit.status.personnel} className="h-1" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between">
-                  <span>Condition</span>
-                  <span>{unit.status.condition}%</span>
-                </div>
                 <Progress 
-                  value={unit.status.condition} 
-                  className="h-1" 
-                  indicatorClassName={
-                    unit.status.condition > 70 ? "bg-tactical-success" :
-                    unit.status.condition > 30 ? "bg-tactical-warning" : 
-                    "bg-tactical-danger"
-                  }
+                  value={unit.status.personnel} 
+                  className="h-1.5 bg-gray-800" 
                 />
               </div>
               
-              <div>
-                <div className="flex justify-between">
-                  <span>Ammo</span>
+              <div className="mb-2">
+                <div className="flex justify-between items-center text-xs mb-1">
+                  <span>Ammunition</span>
                   <span>{unit.status.ammo}%</span>
                 </div>
                 <Progress 
                   value={unit.status.ammo} 
-                  className="h-1"
-                  indicatorClassName={
-                    unit.status.ammo > 60 ? "bg-tactical-success" :
-                    unit.status.ammo > 30 ? "bg-tactical-warning" : 
-                    "bg-tactical-danger"
-                  }
+                  className="h-1.5 bg-gray-800" 
                 />
               </div>
               
-              <div>
-                <div className="flex justify-between">
+              <div className="mb-1">
+                <div className="flex justify-between items-center text-xs mb-1">
                   <span>Fuel</span>
                   <span>{unit.status.fuel}%</span>
                 </div>
                 <Progress 
                   value={unit.status.fuel} 
-                  className="h-1"
-                  indicatorClassName={
-                    unit.status.fuel > 60 ? "bg-tactical-success" :
-                    unit.status.fuel > 30 ? "bg-tactical-warning" : 
-                    "bg-tactical-danger"
-                  }
+                  className="h-1.5 bg-gray-800" 
                 />
               </div>
-            </div>
-          </div>
+              
+              <div className="flex justify-between items-center text-xs text-gray-400 mt-2">
+                <span>
+                  {unit.position.lat.toFixed(1)}°N, {unit.position.lng.toFixed(1)}°E
+                </span>
+                <span>{formatLastUpdate(unit.lastUpdate)}</span>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
