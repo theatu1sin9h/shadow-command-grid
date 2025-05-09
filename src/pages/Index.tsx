@@ -57,8 +57,8 @@ const Index = () => {
       />
       
       <div className="flex-1 p-2 md:p-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-        {/* Main tactical map */}
-        <div className="md:col-span-2 lg:col-span-3 h-[400px] md:h-auto">
+        {/* Main tactical map - Added flexibility for fullscreen mode */}
+        <div className="md:col-span-2 lg:col-span-3 h-[400px] md:h-auto relative z-10">
           <Map units={units} commands={commands} />
         </div>
         

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Unit, Command, Coordinates, CommandType, UnitType } from "@/utils/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LayoutGrid, Navigation, Flag, FlagTriangleRight } from "lucide-react";
+import { LayoutGrid, Navigation, Flag, FlagTriangleRight, Maximize, Minimize } from "lucide-react";
 
 interface MapProps {
   units: Unit[];
@@ -17,6 +17,7 @@ const Map = ({ units, commands }: MapProps) => {
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
   const [showTerrain, setShowTerrain] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // India's geographical boundaries (approximate)
   const indiaGeoBounds = {
@@ -178,12 +179,37 @@ const Map = ({ units, commands }: MapProps) => {
     setZoom(newZoom);
   };
   
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+    
+    // Reset zoom and offset when toggling fullscreen
+    if (!isFullscreen) {
+      setZoom(1);
+      setMapOffset({ x: 0, y: 0 });
+    }
+  };
+  
   useEffect(() => {
     if (!canvasRef.current || units.length === 0) return;
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    
+    // Enable high-DPI rendering for sharp graphics
+    const pixelRatio = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Set display size
+    canvas.width = rect.width * pixelRatio;
+    canvas.height = rect.height * pixelRatio;
+    
+    // Scale the context to ensure correct drawing operations
+    ctx.scale(pixelRatio, pixelRatio);
+    
+    // Set CSS size
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -192,7 +218,7 @@ const Map = ({ units, commands }: MapProps) => {
     ctx.save();
     
     // Center the map
-    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.translate(canvas.width / 2 / pixelRatio, canvas.height / 2 / pixelRatio);
     
     // Apply zoom
     ctx.scale(zoom, zoom);
@@ -201,12 +227,12 @@ const Map = ({ units, commands }: MapProps) => {
     ctx.translate(mapOffset.x / zoom, mapOffset.y / zoom);
     
     // Center back
-    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+    ctx.translate(-canvas.width / 2 / pixelRatio, -canvas.height / 2 / pixelRatio);
     
     // Scale factor
     const padding = 60;
-    const width = canvas.width - padding * 2;
-    const height = canvas.height - padding * 2;
+    const width = canvas.width / pixelRatio - padding * 2;
+    const height = canvas.height / pixelRatio - padding * 2;
     
     // Draw tactical map background with military-style grid
     ctx.fillStyle = '#1A2130'; // Dark blue background for night vision compatibility
@@ -325,9 +351,9 @@ const Map = ({ units, commands }: MapProps) => {
     }
     
     if (showGrid) {
-      // Draw grid lines with military coordinates
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 0.5;
+      // Draw grid lines with military coordinates - improved for clarity
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)'; // Increased opacity for better visibility
+      ctx.lineWidth = 0.75; // Slightly thicker lines
       
       // Draw horizontal grid lines
       for (let i = 0; i <= 8; i++) {
@@ -338,10 +364,10 @@ const Map = ({ units, commands }: MapProps) => {
         ctx.stroke();
         
         const lat = indiaGeoBounds.maxLat - (i * (indiaGeoBounds.maxLat - indiaGeoBounds.minLat) / 8);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Increased opacity for better readability
+        ctx.font = 'bold 10px monospace'; // Made text bold for better visibility
         ctx.textAlign = 'left';
-        ctx.fillText(lat.toFixed(1) + '°N', 5, y + 3);
+        ctx.fillText(lat.toFixed(1) + '°N', 5, y + 4);
       }
       
       // Draw vertical grid lines
@@ -353,21 +379,21 @@ const Map = ({ units, commands }: MapProps) => {
         ctx.stroke();
         
         const lng = indiaGeoBounds.minLng + (i * (indiaGeoBounds.maxLng - indiaGeoBounds.minLng) / 8);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.font = 'bold 10px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(lng.toFixed(1) + '°E', x, canvas.height - 5);
+        ctx.fillText(lng.toFixed(1) + '°E', x, canvas.height / pixelRatio - 5);
       }
       
-      // Add sector designations for military reference
+      // Add sector designations for military reference - improved visibility
       const sectorLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
       for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
           const x = padding + (i * width / 8) + (width / 16);
           const y = padding + (j * height / 8) + (height / 16);
           
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-          ctx.font = '9px monospace';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; // Increased opacity
+          ctx.font = 'bold 10px monospace'; // Made bold for better visibility
           ctx.textAlign = 'center';
           ctx.fillText(`${sectorLetters[i]}${j+1}`, x, y);
         }
@@ -573,44 +599,44 @@ const Map = ({ units, commands }: MapProps) => {
     // Draw map controls - improved for better visibility
     // Zoom controls 
     ctx.fillStyle = 'rgba(10, 25, 41, 0.85)';
-    ctx.fillRect(canvas.width - 50, 20, 30, 100);
+    ctx.fillRect(canvas.width / pixelRatio - 50, 20, 30, 100);
     ctx.strokeStyle = '#0F4C75';
     ctx.lineWidth = 1;
-    ctx.strokeRect(canvas.width - 50, 20, 30, 100);
+    ctx.strokeRect(canvas.width / pixelRatio - 50, 20, 30, 100);
     
     ctx.fillStyle = '#fff';
     ctx.font = '18px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('+', canvas.width - 35, 40);
+    ctx.fillText('+', canvas.width / pixelRatio - 35, 40);
     
     ctx.beginPath();
-    ctx.moveTo(canvas.width - 45, 50);
-    ctx.lineTo(canvas.width - 25, 50);
+    ctx.moveTo(canvas.width / pixelRatio - 45, 50);
+    ctx.lineTo(canvas.width / pixelRatio - 25, 50);
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1;
     ctx.stroke();
     
-    ctx.fillText('-', canvas.width - 35, 70);
+    ctx.fillText('-', canvas.width / pixelRatio - 35, 70);
     
     ctx.beginPath();
-    ctx.moveTo(canvas.width - 45, 80);
-    ctx.lineTo(canvas.width - 25, 80);
+    ctx.moveTo(canvas.width / pixelRatio - 45, 80);
+    ctx.lineTo(canvas.width / pixelRatio - 25, 80);
     ctx.stroke();
     
     // Grid toggle
     ctx.font = '10px monospace';
-    ctx.fillText('GRID', canvas.width - 35, 95);
+    ctx.fillText('GRID', canvas.width / pixelRatio - 35, 95);
     ctx.beginPath();
-    ctx.rect(canvas.width - 43, 100, 16, 10);
+    ctx.rect(canvas.width / pixelRatio - 43, 100, 16, 10);
     ctx.strokeStyle = '#fff';
     ctx.stroke();
     if (showGrid) {
       ctx.fillStyle = '#4CAF50';
-      ctx.fillRect(canvas.width - 41, 102, 12, 6);
+      ctx.fillRect(canvas.width / pixelRatio - 41, 102, 12, 6);
     }
     
     // Legend in bottom left
-    drawMapLegend(ctx, canvas.width, canvas.height);
+    drawMapLegend(ctx, canvas.width / pixelRatio, canvas.height / pixelRatio);
     
     // Keep animation going
     const animId = requestAnimationFrame(() => {
@@ -714,16 +740,16 @@ const Map = ({ units, commands }: MapProps) => {
     let x = cx;
     let y = cy;
     let step = Math.PI / spikes;
-
+    
     ctx.beginPath();
     ctx.moveTo(cx, cy - outerRadius);
-
+    
     for (let i = 0; i < spikes; i++) {
       x = cx + Math.cos(rot) * outerRadius;
       y = cy + Math.sin(rot) * outerRadius;
       ctx.lineTo(x, y);
       rot += step;
-
+      
       x = cx + Math.cos(rot) * innerRadius;
       y = cy + Math.sin(rot) * innerRadius;
       ctx.lineTo(x, y);
@@ -945,7 +971,7 @@ const Map = ({ units, commands }: MapProps) => {
   };
   
   return (
-    <div className="bg-tactical-dark p-4 rounded-lg border border-tactical-primary h-full">
+    <div className={`bg-tactical-dark p-4 rounded-lg border border-tactical-primary ${isFullscreen ? 'fixed inset-0 z-50' : 'h-full'}`}>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <Navigation size={16} className="text-tactical-primary" />
@@ -967,6 +993,13 @@ const Map = ({ units, commands }: MapProps) => {
               title="Toggle Terrain"
             >
               <FlagTriangleRight size={14} />
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className="p-1 text-xs bg-tactical-primary rounded hover:bg-tactical-primary/90"
+              title={isFullscreen ? "Exit Fullscreen" : "Maximize Map"}
+            >
+              {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
             </button>
           </div>
         </div>
